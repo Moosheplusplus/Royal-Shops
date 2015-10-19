@@ -1,0 +1,11 @@
+# File Extensions
+*.class
+*.jar
+
+# Files
+.classpath
+.project
+
+# Directories
+bin/
+.settings/

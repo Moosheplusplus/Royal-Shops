@@ -1,0 +1,7 @@
+# # File Configuration for plugin RoyalShops v0.1-beta
+
+# Allow Everyone to be able to trade. If disabled, will require
+# player to have permission "citizens.shop". You can allow players
+# to trade with specific NPCs by giving a player the permission node
+# "citizens.shop.npc<npc-id>".
+free-trade: true
