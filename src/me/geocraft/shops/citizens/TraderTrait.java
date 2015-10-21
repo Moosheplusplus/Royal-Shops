@@ -35,7 +35,7 @@ public class TraderTrait extends Trait {
 	private static Economy economy = null;
 
 	public TraderTrait() {
-		super("trader");
+		super("shop");
 		plugin = (MainPlugin) Bukkit.getServer().getPluginManager()
 				.getPlugin("RoyalShops");
 		if(economy == null)
@@ -107,7 +107,7 @@ public class TraderTrait extends Trait {
 					amt = icon.getAmount();
 				EconomyResponse response = economy
 						.withdrawPlayer(player, 
-								item.getWorth());
+								item.getWorth() * amt);
 				if(response.transactionSuccess()) {
 					player.playSound(player.getLocation(),
 							Util.getSound(sound_onShopUse), 1.0f, 1.0f);
