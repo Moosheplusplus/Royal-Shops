@@ -1,10 +1,10 @@
 name: RoyalShops
 main: me.geocraft.shops.MainPlugin
-version: 0.1-beta
+version: 0.2-beta
 depend: [Vault, Citizens]
 commands:
   trader:
     description: All commands related to the Trader trait for Citizens
-    usage: /trader <command>
+    usage: /trader help
     permission: citizens.shop.admin
     permission-message: You do not have sufficient permission to use this command.

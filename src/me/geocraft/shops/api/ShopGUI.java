@@ -3,6 +3,7 @@ package me.geocraft.shops.api;
 import java.util.*;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.inventory.*;
@@ -56,35 +57,51 @@ public abstract class ShopGUI implements Listener {
 		if(!shelf.matches(event.getInventory())) {
 			return;
 		}
-		Player player = (Player) event.getWhoClicked();
-		if(event.getSlotType() == SlotType.OUTSIDE) {
-			close(player);
-			return;
-		}
-		long uid = player.getMetadata("trade-uid").get(0).asLong();
-		int slot = event.getRawSlot();
-		if(uids.contains(uid)) {
-			if(shelf.size() > slot) {
-				ShopItem si = shelf.getItem(slot);
-				if(slot < 54 && slot > -1)
-					buy(event, player, si);
+		try {
+			Player player = (Player) event.getWhoClicked();
+			if(event.getSlotType() == SlotType.OUTSIDE) {
+				close(player);
+				return;
 			}
-			// TODO add full-scale selling to NPCs
-			if(slot < 89 && slot > 53)
-				sell(event, player, slot);
-		} else {
-			plugin.getLogger().warning("Player "+player.getName()+" tried to access "
-					+ "restricted shop! [Unique ID MISMATCH "+uid+"]");
-			System.out.println(uids);
-			close(player);
+			long uid = player.getMetadata("trade-uid").get(0).asLong();
+			int slot = event.getRawSlot();
+			if(uids.contains(uid)) {
+				if(shelf.size() > slot) {
+					ShopItem si = shelf.getItem(slot);
+					if(slot < 54 && slot > -1)
+						buy(event, player, si);
+				}
+				if(slot < 89 && slot > 53) {
+					ItemStack selected = event.getCurrentItem();
+					if(selected != null &&
+							selected.getType() != Material.AIR) {
+						ShopItem si = shelf.get(selected);
+						if(si != null && si.getSell() > 0.0f)
+							sell(event, player, si);
+						else
+							player.sendMessage("\u00A7cYou can only sell items"
+									+ " already in the shop!");
+					}
+				}
+			} else {
+				plugin.getLogger().warning("Player "+player.getName()+
+						" tried to access "
+						+ "restricted shop! [Unique ID MISMATCH "+uid+"]");
+				System.out.println(uids);
+				close(player);
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 		event.setCancelled(true);
 	}
 	
-	public abstract void buy(InventoryClickEvent event, Player player, ShopItem item);
-	public abstract void sell(InventoryClickEvent event, Player player, int slot);
+	public abstract void buy(InventoryClickEvent event, Player player,
+			ShopItem item);
+	public abstract void sell(InventoryClickEvent event, Player player,
+			ShopItem item);
 
-	@EventHandler(ignoreCancelled=true)
+	@EventHandler
 	public void onInventoryClose(InventoryCloseEvent event) {
 		if(!shelf.matches(event.getInventory())) {
 			return;
@@ -112,14 +129,12 @@ public abstract class ShopGUI implements Listener {
 		p.closeInventory();
 	}
 	
-	public ShopItem addItem(ItemStack item, float worth) {
-		ItemMeta meta;
-		if(item.hasItemMeta())
-			meta = item.getItemMeta();
-		else
-			meta = Bukkit.getItemFactory().getItemMeta(item.getType());
-		item.setItemMeta(meta);
-		ShopItem si = new ShopItem(item, worth);
+	public ShopItem addItem(ItemStack item, float buy, float sell) {
+		if(!item.hasItemMeta()) {
+			item.setItemMeta(Bukkit.getItemFactory().getItemMeta(
+					item.getType()));
+		}
+		ShopItem si = new ShopItem(item, buy, sell);
 		shelf.putItem(si);
 		return si;
 	}

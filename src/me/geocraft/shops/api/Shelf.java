@@ -67,4 +67,13 @@ public class Shelf {
 		this.title = title;
 		reload();
 	}
+	
+	public ShopItem get(ItemStack item) {
+		for(ShopItem i : shop)
+			if(i.getItem().getType().equals(item.getType()))
+				if(i.getCleanCopy().isSimilar(item))
+					return i;
+		return null;
+	}
+	
 }

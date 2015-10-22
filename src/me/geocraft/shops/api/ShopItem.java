@@ -8,15 +8,16 @@ import org.bukkit.inventory.meta.*;
 public class ShopItem {
 
 	private ItemStack item;
-	private float worth;
+	private float buy = 0.0f, sell = 0.0f;
 	private ItemMeta meta;
 	
-	public ShopItem(ItemStack item, float worth) {
+	public ShopItem(ItemStack item, float buy, float sell) {
 		this.item = item;
 		meta = item.getItemMeta();
 		if(!meta.hasLore())
 			meta.setLore(new ArrayList<String>());
-		setWorth(worth);
+		setBuy(buy);
+		setSell(sell);
 		item.setItemMeta(meta);
 	}
 	
@@ -28,25 +29,48 @@ public class ShopItem {
 		ItemStack clean = item.clone();
 		ItemMeta meta = clean.getItemMeta();
 		List<String> str = meta.getLore();
+		if(sell > 0.0f)
+			str.remove(str.size() - 1);
 		str.remove(str.size() - 1);
 		meta.setLore(str);
 		clean.setItemMeta(meta);
 		return clean;
 	}
 	
-	public float getWorth() {
-		return worth;
+	public float getBuy() {
+		return buy;
 	}
 	
-	public void setWorth(float worth) {
-		String desc = "\u00A7bBuy: \u00A7o$"+worth;
+	public float getSell() {
+		return sell;
+	}
+	
+	public void setBuy(float worth) {
+		String desc = "\u00A7aBuy: \u00A7o$"+worth;
 		List<String> str = meta.getLore();
-		if(str.size() > 0)
-			str.remove(str.size() - 1);
-		str.add(desc);
+		int i = str.size() - (sell > 0.0f ? 2 : 1);
+		if(str.size() > 0 && str.get(i).contains("\u00A7aBuy")) {
+			str.remove(i);
+			str.add(i, desc);
+		}
+		else
+			str.add(desc);
 		meta.setLore(str);
 		item.setItemMeta(meta);
-		this.worth = worth;
+		this.buy = worth;
+	}
+	
+	public void setSell(float worth) {
+		String desc = "\u00A7bSell: \u00A7o$"+worth;
+		List<String> str = meta.getLore();
+		int i = str.size() - 1;
+		if(str.size() > 0 && str.get(i).contains("\u00A7bSell"))
+			str.remove(i);
+		if(worth > 0.0f)
+			str.add(desc);
+		meta.setLore(str);
+		item.setItemMeta(meta);
+		this.sell = worth;
 	}
 	
 	public ItemMeta getItemMeta() {
@@ -61,4 +85,5 @@ public class ShopItem {
 		meta.setLore(lore);
 		item.setItemMeta(meta);
 	}
+	
 }

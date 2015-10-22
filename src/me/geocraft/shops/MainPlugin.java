@@ -17,7 +17,7 @@ import org.bukkit.plugin.java.*;
 
 public class MainPlugin extends JavaPlugin {
 	
-	public static final String PLUGIN_VERSION = "0.1-beta";
+	public static final String PLUGIN_VERSION = "0.2-beta";
 	
 	public boolean freeTrade = true;
 	
@@ -83,6 +83,7 @@ public class MainPlugin extends JavaPlugin {
 					}
 					if(slot < 0 || slot > 53) {
 						sender.sendMessage("\u00A7cInvalid Slot Number! Only 0-53 accepted.");
+						return true;
 					}
 					String msg = "\u00A7bSuccessfully removed item in slot "
 								+slot;
@@ -98,23 +99,26 @@ public class MainPlugin extends JavaPlugin {
 				
 				case "additem":
 					if(sender instanceof Player) {
-						if(args.length < 2) {
+						if(args.length < 3) {
 							sender.sendMessage("\u00A7bUsage: /"+lbl+" "+args[0]
-									+ "<worth>");
+									+ " <buy> <sell>");
 							return true;
 						}
-						float i = 0;
+						float b = 0, s = 0;
 						try {
-							i = Float.parseFloat(args[1]);
+							System.out.println("Parsing Variables");
+							b = Float.parseFloat(args[1]);
+							s = Float.parseFloat(args[2]);
 						} catch (Exception e) {
 							sender.sendMessage("\u00A7bUsage: /"+lbl+" "+args[0]
-									+ "<worth>");
+									+ " <buy> <sell>");
 							return true;
 						}
 						ItemStack hand = ((Player) sender)
 								.getInventory().getItemInHand();
 						if(hand != null && !hand.getType().equals(Material.AIR)) {
-							trait.getGUI().addItem(hand, i);
+							System.out.println("Adding Item");
+							trait.getGUI().addItem(hand, b, s);
 						} else {
 							sender.sendMessage("\u00A7cYou must have the item you want to sell in your hands.");
 							return true;

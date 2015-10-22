@@ -54,14 +54,15 @@ public class TraderTrait extends Trait {
 		initGui();
 		for(DataKey k : key.getIntegerSubKeys()) {
 			ItemStack item = ItemStorage.loadItemStack(k);
-			float f = (float) k.getDouble("worth");
+			float b = (float) k.getDouble("worth");
+			float s = (float) k.getDouble("sell");
 			ItemMeta meta;
 			if(item.hasItemMeta())
 				meta = item.getItemMeta();
 			else
 				meta = Bukkit.getItemFactory().getItemMeta(item.getType());
 			item.setItemMeta(meta);
-			gui.addItem(item, f);
+			gui.addItem(item, b, s);
 		}
 
 		loaded = true;
@@ -88,7 +89,8 @@ public class TraderTrait extends Trait {
 			DataKey sk = key.getRelative(""+p);
 			key.removeKey(""+p);
 			ItemStorage.saveItem(sk, item);
-			sk.setDouble("worth", i.getWorth());
+			sk.setDouble("worth", i.getBuy());
+			sk.setDouble("sell", i.getSell());
 			p++;
 		}
 	}
@@ -107,7 +109,7 @@ public class TraderTrait extends Trait {
 					amt = icon.getAmount();
 				EconomyResponse response = economy
 						.withdrawPlayer(player, 
-								item.getWorth() * amt);
+								item.getBuy() * amt);
 				if(response.transactionSuccess()) {
 					player.playSound(player.getLocation(),
 							Util.getSound(sound_onShopUse), 1.0f, 1.0f);
@@ -125,10 +127,25 @@ public class TraderTrait extends Trait {
 			}
 
 			@Override
-			public void sell(InventoryClickEvent event, Player player, int slot) {
-				// TODO add selling, maybe?
+			public void sell(InventoryClickEvent event, Player player, ShopItem item) {
+				ItemStack product = event.getCurrentItem();
+				int amt = event.getClick().isShiftClick() ? product.getAmount() : 1;
+				EconomyResponse response = economy
+						.depositPlayer(player, item.getSell() * amt);
+				if(response.transactionSuccess()) {
+					player.playSound(player.getLocation(),
+							Util.getSound(sound_onShopUse), 1.0f, 1.0f);
+					player.sendMessage("\u00A76You sold \u00A7e"
+							+amt+"\u00A76 of \u00A7a"
+							+product.getType()+"\u00A76.");
+					if(product.getAmount() <= amt)
+						player.getInventory().removeItem(product);
+					else
+						product.setAmount(product.getAmount() - amt);
+				} else {
+					player.sendMessage("\u00A7cYou cannot sell this at the moment!");
+				}
 			}
-			
 		};
 	}
 	
@@ -138,9 +155,9 @@ public class TraderTrait extends Trait {
 			gui.closeAll();
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled=true)
 	public void onRClick(NPCRightClickEvent event) {
-		if(event.isCancelled() || !event.getNPC().equals(getNPC()) || !onClick) {
+		if(!event.getNPC().equals(getNPC()) || !onClick) {
 			return;
 		}
 		Player buyer = event.getClicker();
