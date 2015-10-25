@@ -17,7 +17,7 @@ import org.bukkit.plugin.java.*;
 
 public class MainPlugin extends JavaPlugin {
 	
-	public static final String PLUGIN_VERSION = "0.2-beta";
+	public static final String PLUGIN_VERSION = "0.3-beta";
 	
 	public boolean freeTrade = true;
 	
@@ -48,6 +48,7 @@ public class MainPlugin extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String lbl,
 			String[] args) {
+		//TODO: Add WAY cleaner command handling.
 		NPC npc = CitizensAPI.getDefaultNPCSelector().getSelected(sender);
 		if(npc == null) {
 			sender.sendMessage("\u00A7cYou must select an NPC!");
@@ -132,8 +133,20 @@ public class MainPlugin extends JavaPlugin {
 				case "sound":
 					if(args.length < 3) {
 						sender.sendMessage("\u00A7bUsage: /"+lbl+" "+args[0]
-								+ "<open|use> <sound>");
+								+ "<open|use> <sound> [pitch(?|0.0-1.0)]");
 						return true;
+					}
+					if(args.length >= 3) {
+						if(args[3].contains("?"))
+							trait.varyPitch = true;
+						else
+							try {
+								trait.pitch = Float.parseFloat(args[3]);
+							} catch(Exception e) {
+								sender.sendMessage("\u00A74Unknown "
+										+ "value "+args[3]);
+								return true;
+							}
 					}
 					switch(args[1].toLowerCase()) {
 						case "open":
@@ -146,6 +159,7 @@ public class MainPlugin extends JavaPlugin {
 							sender.sendMessage("\u00A74Unknown sound "+args[1]);
 							return true;
 					}
+					
 					sender.sendMessage("\u00A76Set sound to \u00A7c"
 								+args[2].toUpperCase());
 					return true;

@@ -9,7 +9,6 @@ import org.bukkit.event.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.inventory.*;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.*;
 import org.bukkit.plugin.java.JavaPlugin;
 

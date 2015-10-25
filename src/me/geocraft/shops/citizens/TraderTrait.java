@@ -30,7 +30,9 @@ public class TraderTrait extends Trait {
 		reqPerm = false,
 		onClick = true,
 		shop_infinite = false,
-		loaded = false;
+		loaded = false,
+		varyPitch = false;
+	public float pitch = 1.0f;
 	private ShopGUI gui = null;
 	private static Economy economy = null;
 
@@ -51,6 +53,7 @@ public class TraderTrait extends Trait {
 		shop_infinite     = key.getBoolean("shop_infinite");
 		reqPerm = key.getBoolean("require_permission");
 		onClick = key.getBoolean("trade_on_click"    );
+		varyPitch = key.getBoolean("vary_pitch");
 		initGui();
 		for(DataKey k : key.getIntegerSubKeys()) {
 			ItemStack item = ItemStorage.loadItemStack(k);
@@ -82,6 +85,7 @@ public class TraderTrait extends Trait {
 		key.setBoolean("shop_infinite", shop_infinite);
 		key.setBoolean("require_permission", reqPerm);
 		key.setBoolean("trade_on_click", onClick);
+		key.setBoolean("vary_pitch", varyPitch);
 		List<ShopItem> stock = gui.getShelf().getStock();
 		int p = 0;
 		for(ShopItem i : stock) {
@@ -111,8 +115,7 @@ public class TraderTrait extends Trait {
 						.withdrawPlayer(player, 
 								item.getBuy() * amt);
 				if(response.transactionSuccess()) {
-					player.playSound(player.getLocation(),
-							Util.getSound(sound_onShopUse), 1.0f, 1.0f);
+					playSound(player, sound_onShopUse);
 					player.sendMessage("\u00A76You bought \u00A7e"
 							+amt+"\u00A76 of \u00A7a"
 							+icon.getType()+"\u00A76.");
@@ -133,8 +136,7 @@ public class TraderTrait extends Trait {
 				EconomyResponse response = economy
 						.depositPlayer(player, item.getSell() * amt);
 				if(response.transactionSuccess()) {
-					player.playSound(player.getLocation(),
-							Util.getSound(sound_onShopUse), 1.0f, 1.0f);
+					playSound(player, sound_onShopUse);
 					player.sendMessage("\u00A76You sold \u00A7e"
 							+amt+"\u00A76 of \u00A7a"
 							+product.getType()+"\u00A76.");
@@ -147,6 +149,11 @@ public class TraderTrait extends Trait {
 				}
 			}
 		};
+	}
+	
+	private void playSound(Player player, String sound) {
+		Util.playSound(player, sound,
+				varyPitch ? new Random().nextFloat() : pitch);
 	}
 	
 	@Override
@@ -170,9 +177,7 @@ public class TraderTrait extends Trait {
 	}
 	
 	private void trade(Player player) {
-		Sound sound = Util.getSound(sound_onShopOpen);
-		player.playSound(player.getLocation(), sound,
-				1.0f, 1.0f);
+		playSound(player, sound_onShopOpen);
 		gui.displayFrame(player);
 	}
 

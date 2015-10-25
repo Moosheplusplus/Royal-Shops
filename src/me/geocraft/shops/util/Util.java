@@ -4,6 +4,7 @@ import java.io.*;
 
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.*;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Util {
@@ -23,6 +24,16 @@ public class Util {
 			sound = null;
 		}
 		return sound;
+	}
+	
+	public static void playSound(Player player, String sound,
+			float pitch) {
+		Sound s = getSound(sound);
+		if(s == null)
+			player.playSound(player.getLocation(),
+					sound.toLowerCase(), 1.0f, pitch);
+		else
+			player.playSound(player.getLocation(), s, 1.0f, pitch);
 	}
 	
 	/**
