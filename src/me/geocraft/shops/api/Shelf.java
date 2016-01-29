@@ -23,10 +23,13 @@ public class Shelf {
 		if(!shop.contains(item))
 			shop.add(item);
 		inventory.addItem(item.getItem());
+		reload();
 	}
 	
 	public boolean takeItem(ShopItem item) {
-		return shop.remove(item);
+		boolean b = shop.remove(item);
+		reload();
+		return b;
 	}
 	
 	public String getName() {

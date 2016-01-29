@@ -46,7 +46,7 @@ public class ShopItem {
 	}
 	
 	public void setBuy(float worth) {
-		String desc = "\u00A7aBuy: \u00A7o$"+worth;
+		String desc = String.format("\u00A7aBuy: \u00A7o$%1.2d", worth);
 		List<String> str = meta.getLore();
 		int i = str.size() - (sell > 0.0f ? 2 : 1);
 		if(str.size() > 0 && str.get(i).contains("\u00A7aBuy")) {
@@ -61,7 +61,7 @@ public class ShopItem {
 	}
 	
 	public void setSell(float worth) {
-		String desc = "\u00A7bSell: \u00A7o$"+worth;
+		String desc = String.format("\u00A7bSell: \u00A7o$%1.2d", worth);
 		List<String> str = meta.getLore();
 		int i = str.size() - 1;
 		if(str.size() > 0 && str.get(i).contains("\u00A7bSell"))

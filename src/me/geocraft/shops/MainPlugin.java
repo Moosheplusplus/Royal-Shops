@@ -17,7 +17,7 @@ import org.bukkit.plugin.java.*;
 
 public class MainPlugin extends JavaPlugin {
 	
-	public static final String PLUGIN_VERSION = "0.3-beta";
+	public static final String PLUGIN_VERSION = "0.4-beta";
 	
 	public boolean freeTrade = true;
 	
@@ -107,7 +107,6 @@ public class MainPlugin extends JavaPlugin {
 						}
 						float b = 0, s = 0;
 						try {
-							System.out.println("Parsing Variables");
 							b = Float.parseFloat(args[1]);
 							s = Float.parseFloat(args[2]);
 						} catch (Exception e) {
@@ -117,13 +116,15 @@ public class MainPlugin extends JavaPlugin {
 						}
 						ItemStack hand = ((Player) sender)
 								.getInventory().getItemInHand();
-						if(hand != null && !hand.getType().equals(Material.AIR)) {
-							System.out.println("Adding Item");
-							trait.getGUI().addItem(hand, b, s);
-						} else {
+						if(hand == null || hand.getType().equals(Material.AIR)) {
 							sender.sendMessage("\u00A7cYou must have the item you want to sell in your hands.");
 							return true;
 						}
+						if(trait.shop_infinite) {
+							hand = hand.clone();
+							hand.setAmount(1);
+						}
+						trait.getGUI().addItem(hand, b, s);
 						((Player) sender).setItemInHand(new ItemStack(Material.AIR));
 						sender.sendMessage("\u00A7bSuccessfully Added "
 									+hand+" to Shop!");

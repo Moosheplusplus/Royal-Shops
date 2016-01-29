@@ -28,6 +28,8 @@ public class Util {
 	
 	public static void playSound(Player player, String sound,
 			float pitch) {
+		if(player == null || sound == null)
+			return;
 		Sound s = getSound(sound);
 		if(s == null)
 			player.playSound(player.getLocation(),

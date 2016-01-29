@@ -12,7 +12,6 @@ public class ShelfHolder implements InventoryHolder {
 		this.shelf = shelf;
 	}
 	
-	@Override
 	public Inventory getInventory() {
 		return shelf.getInventory();
 	}

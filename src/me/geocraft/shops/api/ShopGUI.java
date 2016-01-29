@@ -139,6 +139,8 @@ public abstract class ShopGUI implements Listener {
 	}
 	
 	public boolean removeItem(int slot) {
+		if(slot > shelf.size() - 1)
+			return false;
 		return shelf.takeItem(shelf.getItem(slot));
 	}
 }
