@@ -1,46 +1,34 @@
-package me.geocraft.shops;
+package io.mooshe.shops;
 
-
-import me.geocraft.shops.citizens.TraderTrait;
-import me.geocraft.shops.util.Util;
+import io.mooshe.shops.citizens.TraderTrait;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.trait.TraitInfo;
 
 import org.bukkit.Material;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.*;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.*;
 
 public class MainPlugin extends JavaPlugin {
 	
-	public static final String PLUGIN_VERSION = "0.4-beta";
-	
-	public boolean freeTrade = true;
+	public static final String PLUGIN_VERSION = "0.5";
+	private String[] help = new String[] {
+		"/trader remitem <slot> - &bRemoves item from the specified slot.",
+		"/trader trade - &bTrades with the selected NPC.",
+		"/trader additem <buy_price> <sell_price> - &bAdds item in hand for " +
+				"specified amount to the shop.",
+		"/trader sound <sound> <open|use> <pitch (?|0.0-1.0)> - &bSets sound " +
+				"to use for when the shop is opened or used, and the pitch " +
+				"to play the sound at. Setting ? will make it random.",
+		"/trader permissions - &bRequires permissions to be set to use this shop.",
+		"/trader click - &bToggles whether or not the shop could be right-clicked.",
+		"/trader title <name> - &bsets shop name."
+	};
 	
 	@Override
 	public void onEnable() {
-		load();
-		getLogger().info("RoyalShops v"+PLUGIN_VERSION+" enabled!");
-	}
-	
-	@Override
-	public void onDisable() {
-		getLogger().info("RoyalShops v"+PLUGIN_VERSION+" disabled!");
-	}
-
-	
-	public void load() {
-		FileConfiguration cfg = getConfig();
-		if(!cfg.contains("free-trade")) {
-			Util.loadYamlConfig(this, "config.yml");
-			reloadConfig();
-			cfg = getConfig();
-		}
-		freeTrade = cfg.getBoolean("free-trade");
 		CitizensAPI.getTraitFactory().registerTrait(
 				TraitInfo.create(TraderTrait.class).withName("shop"));
 	}
@@ -48,6 +36,11 @@ public class MainPlugin extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String lbl,
 			String[] args) {
+		if(args.length > 0 && args[0].equalsIgnoreCase("help")) {
+			for(String s : help)
+				sender.sendMessage(s.replace("&", "\u00A7"));
+			return true;
+		}
 		//TODO: Add WAY cleaner command handling.
 		NPC npc = CitizensAPI.getDefaultNPCSelector().getSelected(sender);
 		if(npc == null) {
@@ -94,7 +87,8 @@ public class MainPlugin extends JavaPlugin {
 					return true;
 				
 				case "trade":
-					sender.sendMessage("\u00A7bOpening up "+trait.shop_title);
+					sender.sendMessage("\u00A7bAttempting to open up "
+								+trait.shop_title);
 					trait.getGUI().displayFrame((Player) sender);
 					return true;
 				
@@ -115,29 +109,26 @@ public class MainPlugin extends JavaPlugin {
 							return true;
 						}
 						ItemStack hand = ((Player) sender)
-								.getInventory().getItemInHand();
+								.getInventory().getItemInHand().clone();
 						if(hand == null || hand.getType().equals(Material.AIR)) {
 							sender.sendMessage("\u00A7cYou must have the item you want to sell in your hands.");
 							return true;
 						}
-						if(trait.shop_infinite) {
-							hand = hand.clone();
-							hand.setAmount(1);
-						}
+						hand.setAmount(1);
 						trait.getGUI().addItem(hand, b, s);
 						((Player) sender).setItemInHand(new ItemStack(Material.AIR));
-						sender.sendMessage("\u00A7bSuccessfully Added "
-									+hand+" to Shop!");
+						sender.sendMessage("\u00A7bSuccessfully Added \u00A7a"
+									+hand.getType()+"\u00A7b to Shop!");
 					}
 					return true;
 				
 				case "sound":
-					if(args.length < 3) {
+					if(args.length <= 3) {
 						sender.sendMessage("\u00A7bUsage: /"+lbl+" "+args[0]
 								+ "<open|use> <sound> [pitch(?|0.0-1.0)]");
 						return true;
 					}
-					if(args.length >= 3) {
+					if(args.length > 3) {
 						if(args[3].contains("?"))
 							trait.varyPitch = true;
 						else
@@ -199,13 +190,6 @@ public class MainPlugin extends JavaPlugin {
 					trait.getGUI().getShelf().setName(trait.shop_title);
 					sender.sendMessage("\u00A76Set NPC shop title to \u00A7a"
 							+trait.shop_title);
-					return true;
-				case "infinite":
-				case "inf":
-					trait.shop_infinite = !trait.shop_infinite;
-					sender.sendMessage("\u00A76Set shop_infinite to "
-							+ "\u00A7"+(trait.shop_infinite ? "b" : "c")
-							+trait.shop_infinite);
 					return true;
 			}
 		} else {

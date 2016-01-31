@@ -1,6 +1,6 @@
 name: RoyalShops
-main: me.geocraft.shops.MainPlugin
-version: 0.3-beta
+main: io.mooshe.shops.MainPlugin
+version: 0.5
 depend: [Vault, Citizens]
 commands:
   trader:

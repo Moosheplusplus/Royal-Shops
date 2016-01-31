@@ -1,4 +1,4 @@
-package me.geocraft.shops.api;
+package io.mooshe.shops.api;
 
 import java.util.*;
 

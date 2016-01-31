@@ -1,4 +1,4 @@
-package me.geocraft.shops.api;
+package io.mooshe.shops.api;
 
 import java.util.*;
 
@@ -70,7 +70,7 @@ public abstract class ShopGUI implements Listener {
 					if(slot < 54 && slot > -1)
 						buy(event, player, si);
 				}
-				if(slot < 89 && slot > 53) {
+				if(slot < 90 && slot > 53) {
 					ItemStack selected = event.getCurrentItem();
 					if(selected != null &&
 							selected.getType() != Material.AIR) {

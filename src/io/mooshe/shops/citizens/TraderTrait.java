@@ -1,10 +1,11 @@
-package me.geocraft.shops.citizens;
+package io.mooshe.shops.citizens;
+
+import io.mooshe.shops.MainPlugin;
+import io.mooshe.shops.api.*;
+import io.mooshe.shops.util.Util;
 
 import java.util.*;
 
-import me.geocraft.shops.MainPlugin;
-import me.geocraft.shops.api.*;
-import me.geocraft.shops.util.Util;
 import net.citizensnpcs.api.event.*;
 import net.citizensnpcs.api.trait.*;
 import net.citizensnpcs.api.util.*;
@@ -21,17 +22,15 @@ public class TraderTrait extends Trait {
 
 	private MainPlugin plugin;
 	
-	
 	public String
-		sound_onShopOpen  = null,
+		sound_onShopOpen  = "VILLAGER_HAGGLE",
 		sound_onShopUse   = "ORB_PICKUP",
-		shop_title        = "Shop";
+		shop_title        = "\u00a7aShop";
 	public boolean 
 		reqPerm = false,
 		onClick = true,
-		shop_infinite = false,
 		loaded = false,
-		varyPitch = false;
+		varyPitch = true;
 	public float pitch = 1.0f;
 	private ShopGUI gui = null;
 	private static Economy economy = null;
@@ -47,10 +46,9 @@ public class TraderTrait extends Trait {
 
 	@Override
 	public void load(DataKey key) {
-		sound_onShopOpen  = key.getString("sound_onShopOpen" );
-		sound_onShopUse   = key.getString("sound_onShopUse"  );
-		shop_title        = key.getString("shop_title"       );
-		shop_infinite     = key.getBoolean("shop_infinite");
+		sound_onShopOpen  = key.getString("sound_onShopOpen",sound_onShopOpen);
+		sound_onShopUse   = key.getString("sound_onShopUse", sound_onShopUse);
+		shop_title        = key.getString("shop_title", shop_title);
 		reqPerm = key.getBoolean("require_permission");
 		onClick = key.getBoolean("trade_on_click"    );
 		varyPitch = key.getBoolean("vary_pitch");
@@ -82,7 +80,6 @@ public class TraderTrait extends Trait {
 		key.setString("sound_onShopOpen" , sound_onShopOpen );
 		key.setString("sound_onShopBuy"  , sound_onShopUse  );
 		key.setString("shop_title", shop_title);
-		key.setBoolean("shop_infinite", shop_infinite);
 		key.setBoolean("require_permission", reqPerm);
 		key.setBoolean("trade_on_click", onClick);
 		key.setBoolean("vary_pitch", varyPitch);
@@ -107,10 +104,12 @@ public class TraderTrait extends Trait {
 			@Override
 			public void buy(InventoryClickEvent event, Player player,
 					ShopItem item) {
+				double d = getNPC().getStoredLocation()
+						.distance(player.getLocation());
+				if(d > 20d)
+					return;
 				ItemStack icon = item.getItem();
-				int amt = event.getClick().isShiftClick() ? 64 : 1;
-				if(!shop_infinite && icon.getAmount() < amt)
-					amt = icon.getAmount();
+				int amt = event.getClick().isShiftClick() ? icon.getMaxStackSize() : 1;
 				EconomyResponse response = economy
 						.withdrawPlayer(player, 
 								item.getBuy() * amt);
@@ -122,8 +121,7 @@ public class TraderTrait extends Trait {
 					ItemStack reward = item.getCleanCopy();
 					reward.setAmount(amt);
 					player.getInventory().addItem(reward);
-					if(!shop_infinite)
-						item.getItem().setAmount(amt);
+					item.getItem().setAmount(1);
 				} else {
 					player.sendMessage("\u00A7cYou cannot buy this at the moment!");
 				}
@@ -131,6 +129,10 @@ public class TraderTrait extends Trait {
 
 			@Override
 			public void sell(InventoryClickEvent event, Player player, ShopItem item) {
+				double d = getNPC().getStoredLocation()
+						.distance(player.getLocation());
+				if(d > 20d)
+					return;
 				ItemStack product = event.getCurrentItem();
 				int amt = event.getClick().isShiftClick() ? product.getAmount() : 1;
 				EconomyResponse response = economy
@@ -153,7 +155,7 @@ public class TraderTrait extends Trait {
 	
 	private void playSound(Player player, String sound) {
 		Util.playSound(player, sound,
-				varyPitch ? new Random().nextFloat() : pitch);
+				varyPitch ? 0.8f + (new Random().nextFloat() * 0.2f) : pitch);
 	}
 	
 	@Override
@@ -183,7 +185,7 @@ public class TraderTrait extends Trait {
 
 	public boolean canTrade(Player player) {
 		return 
-				(plugin.freeTrade && !reqPerm) || 
+				!reqPerm || 
 				(reqPerm && player.hasPermission(
 						"citizens.shop.npc"+this.getNPC().getId())) ||
 				(!reqPerm && player.hasPermission("citizens.shop.npc"));
