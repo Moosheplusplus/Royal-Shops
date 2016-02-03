@@ -1,0 +1,9 @@
+# YAML Configuration for RoyalShops [v0.6]
+
+default:
+  title: &aShop
+  right-click: true
+  permission: false
+  sounds:
+    open: VILLAGER_HAGGLE
+    use: ORB_PICKUP

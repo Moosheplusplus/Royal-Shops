@@ -1,5 +1,8 @@
 package io.mooshe.shops;
 
+import java.io.File;
+import java.io.IOException;
+
 import io.mooshe.shops.citizens.TraderTrait;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
@@ -7,13 +10,13 @@ import net.citizensnpcs.api.trait.TraitInfo;
 
 import org.bukkit.Material;
 import org.bukkit.command.*;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.*;
 
 public class MainPlugin extends JavaPlugin {
 	
-	public static final String PLUGIN_VERSION = "0.5";
 	private String[] help = new String[] {
 		"/trader remitem <slot> - &bRemoves item from the specified slot.",
 		"/trader trade - &bTrades with the selected NPC.",
@@ -24,13 +27,29 @@ public class MainPlugin extends JavaPlugin {
 				"to play the sound at. Setting ? will make it random.",
 		"/trader permissions - &bRequires permissions to be set to use this shop.",
 		"/trader click - &bToggles whether or not the shop could be right-clicked.",
-		"/trader title <name> - &bsets shop name."
+		"/trader title <name> - &bsets shop name.",
+		"/trader expand - toggles automatically expanding the slots in the shop."
 	};
+	
+	public FileConfiguration cfg = null;
 	
 	@Override
 	public void onEnable() {
+		getConfig().options().copyDefaults(true);
+		saveDefaultConfig();
+		cfg = getConfig();
 		CitizensAPI.getTraitFactory().registerTrait(
 				TraitInfo.create(TraderTrait.class).withName("shop"));
+	}
+	
+	@Override
+	public void onDisable() {
+		try {
+			cfg.save(new File(getDataFolder(), "config.yml"));
+		} catch (IOException e) {
+			getLogger().severe("Could not save config.yml!");
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -142,10 +161,10 @@ public class MainPlugin extends JavaPlugin {
 					}
 					switch(args[1].toLowerCase()) {
 						case "open":
-							trait.sound_onShopOpen = args[2].toUpperCase();
+							trait.onShopOpen = args[2].toUpperCase();
 							break;
 						case "use":
-							trait.sound_onShopUse = args[2].toUpperCase();
+							trait.onShopUse = args[2].toUpperCase();
 							break;
 						default:
 							sender.sendMessage("\u00A74Unknown sound "+args[1]);
@@ -174,7 +193,7 @@ public class MainPlugin extends JavaPlugin {
 					sender.sendMessage("\u00A76Set trade_on_click to \u00A7"+
 							(trait.onClick ? "b" : "c")+trait.onClick);
 					return true;
-					
+
 				case "title":
 				case "name":
 					if(args.length < 2) {

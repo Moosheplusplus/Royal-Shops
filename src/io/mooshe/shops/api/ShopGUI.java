@@ -118,7 +118,7 @@ public abstract class ShopGUI implements Listener {
 		}
 	}
 	public void close(HumanEntity p) {
-		if(!p.hasMetadata("trade-uid")) {
+		if(!p.hasMetadata("trade-uid") || p.getInventory() == null) {
 			return;
 		}
 		long uid = p.getMetadata("trade-uid").get(0).asLong();

@@ -23,12 +23,12 @@ public class TraderTrait extends Trait {
 	private MainPlugin plugin;
 	
 	public String
-		sound_onShopOpen  = "VILLAGER_HAGGLE",
-		sound_onShopUse   = "ORB_PICKUP",
-		shop_title        = "\u00a7aShop";
+		onShopOpen = "VILLAGER_HAGGLE",
+		onShopUse  = "ORB_PICKUP",
+		shop_title = "\u00a7aShop";
 	public boolean 
-		reqPerm = false,
-		onClick = true,
+		reqPerm,
+		onClick,
 		loaded = false,
 		varyPitch = true;
 	public float pitch = 1.0f;
@@ -42,16 +42,21 @@ public class TraderTrait extends Trait {
 		if(economy == null)
 			TraderTrait.economy = (plugin.getServer().getServicesManager()
 			.getRegistration(Economy.class)).getProvider();
+		shop_title = plugin.cfg.getString("default.title", shop_title).replace("&", "\u00A7");
+		onShopOpen = plugin.cfg.getString("default.sounds.open", onShopOpen);
+		onShopUse = plugin.cfg.getString("default.sounds.use", onShopUse);
+		reqPerm = plugin.cfg.getBoolean("default.permission", false);
+		onClick = plugin.cfg.getBoolean("default.right-click", true);
 	}
 
 	@Override
 	public void load(DataKey key) {
-		sound_onShopOpen  = key.getString("sound_onShopOpen",sound_onShopOpen);
-		sound_onShopUse   = key.getString("sound_onShopUse", sound_onShopUse);
-		shop_title        = key.getString("shop_title", shop_title);
-		reqPerm = key.getBoolean("require_permission");
-		onClick = key.getBoolean("trade_on_click"    );
-		varyPitch = key.getBoolean("vary_pitch");
+		onShopOpen  = key.getString("sound_onShopOpen",onShopOpen);
+		onShopUse   = key.getString("sound_onShopBuy", onShopUse);
+		shop_title  = key.getString("shop_title", shop_title);
+		reqPerm = key.getBoolean("require_permission", reqPerm);
+		onClick = key.getBoolean("trade_on_click", onClick);
+		varyPitch = key.getBoolean("vary_pitch", true);
 		initGui();
 		for(DataKey k : key.getIntegerSubKeys()) {
 			ItemStack item = ItemStorage.loadItemStack(k);
@@ -77,8 +82,8 @@ public class TraderTrait extends Trait {
 	
 	@Override
 	public void save(DataKey key) {
-		key.setString("sound_onShopOpen" , sound_onShopOpen );
-		key.setString("sound_onShopBuy"  , sound_onShopUse  );
+		key.setString("sound_onShopOpen" , onShopOpen );
+		key.setString("sound_onShopBuy"  , onShopUse  );
 		key.setString("shop_title", shop_title);
 		key.setBoolean("require_permission", reqPerm);
 		key.setBoolean("trade_on_click", onClick);
@@ -114,7 +119,7 @@ public class TraderTrait extends Trait {
 						.withdrawPlayer(player, 
 								item.getBuy() * amt);
 				if(response.transactionSuccess()) {
-					playSound(player, sound_onShopUse);
+					playSound(player, onShopUse);
 					player.sendMessage("\u00A76You bought \u00A7e"
 							+amt+"\u00A76 of \u00A7a"
 							+icon.getType()+"\u00A76.");
@@ -138,7 +143,7 @@ public class TraderTrait extends Trait {
 				EconomyResponse response = economy
 						.depositPlayer(player, item.getSell() * amt);
 				if(response.transactionSuccess()) {
-					playSound(player, sound_onShopUse);
+					playSound(player, onShopUse);
 					player.sendMessage("\u00A76You sold \u00A7e"
 							+amt+"\u00A76 of \u00A7a"
 							+product.getType()+"\u00A76.");
@@ -179,7 +184,7 @@ public class TraderTrait extends Trait {
 	}
 	
 	private void trade(Player player) {
-		playSound(player, sound_onShopOpen);
+		playSound(player, onShopOpen);
 		gui.displayFrame(player);
 	}
 
